@@ -1,4 +1,25 @@
-const http = require('http')
+const express = require('express')
+const app = express()
+// var morgan = require('morgan')
+const cors = require('cors')
+
+app.use(cors())
+app.use(express.static(__dirname + '/www'))
+// app.use(morgan('short'))
+app.use(express.json())
+const requestLogger = (request, response, next) => {
+  console.log('Method:', request.method)
+  console.log('Path:  ', request.path)
+  console.log('Body:  ', request.body)
+  console.log('---')
+  next()
+}
+app.use(requestLogger)
+// const unknownEndpoint = (request, response) => {
+//   response.status(404).send({ error: 'unknown endpoint' })
+// }
+
+// app.use(unknownEndpoint)
 
 let notes = [
   {
@@ -20,11 +41,47 @@ let notes = [
     important: true
   }
 ]
-const app = http.createServer((request, response) => {
-  response.writeHead(200, { 'Content-Type': 'application/json' })
-  response.end(JSON.stringify(notes))
+
+// app.get('/', (req, res) => {
+//   res.send('<h1>Hello World!</h1>')
+// })
+
+app.get('/api/notes', (req, res) => {
+  res.json(notes)
+})
+app.get('/api/notes/:id', (req, res) => {
+  const id = parseFloat(req.params.id)
+  console.log(id)
+  const note = notes.find((note) => note.id === id)
+  if (note) {
+    res.json(note)
+  } else {
+    res.send('404 not found')
+    res.status(404).end()
+  }
+})
+app.delete('/api/notes/:id', (req, res) => {
+  const id = Number(req.params.id)
+  notes = notes.filter((note) => note.id !== id)
+  res.json(notes)
+  res.status(204).end()
 })
 
-const PORT = 3001
-app.listen(PORT)
-console.log(`Server running on port ${PORT}`)
+app.post('/api/notes', (request, response) => {
+  const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0
+
+  const note = request.body
+  note.id = maxId + 1
+
+  notes = notes.concat(note)
+  response.json(notes)
+})
+
+// const PORT = 3001
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`)
+// })
+const PORT = process.env.PORT || 3001
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
