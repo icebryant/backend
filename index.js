@@ -1,12 +1,19 @@
 const express = require('express')
-const app = express()
+const cool = require('cool-ascii-faces')
+const path = require('path')
 // var morgan = require('morgan')
 const cors = require('cors')
 
+const app = express()
 app.use(cors())
 app.use(express.static(__dirname + '/www'))
 // app.use(morgan('short'))
-app.use(express.json())
+app
+  .use(express.json())
+  .set('views', path.join(__dirname, 'views'))
+  .set('view engine', 'ejs')
+  .get('/', (req, res) => res.render('www/index'))
+  .get('/cool', (req, res) => res.send(cool()))
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)
   console.log('Path:  ', request.path)
@@ -20,6 +27,7 @@ app.use(requestLogger)
 // }
 
 // app.use(unknownEndpoint)
+
 
 let notes = [
   {
@@ -42,9 +50,9 @@ let notes = [
   }
 ]
 
-app.get('/', (req, res) => {
-  res.send('<h1>Hello World!</h1>')
-})
+// app.get('/', (req, res) => {
+//   res.send('<h1>Hello World!</h1>')
+// })
 
 app.get('/api/notes', (req, res) => {
   res.json(notes)
