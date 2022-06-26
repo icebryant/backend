@@ -7,7 +7,7 @@ console.log('connecting to', url)
 mongoose
   .connect(url)
   .then((result) => {
-    console.log('connected to MongoDB')
+    console.log('connected to MongoDB' + result)
   })
   .catch((error) => {
     console.log('error connecting to MongoDB:', error.message)
@@ -23,7 +23,11 @@ const noteSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
-  important: Boolean
+  important: Boolean,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }
 })
 
 noteSchema.set('toJSON', {
